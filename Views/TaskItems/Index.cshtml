@@ -1,0 +1,74 @@
+﻿@model IEnumerable<TaskManager.Models.TaskItem>
+
+@{
+    ViewData["Title"] = "My Tasks";
+}
+
+<h2>My Tasks</h2>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Task</a>
+</p>
+
+<form method="post">@Html.AntiForgeryToken()</form> <!-- Needed for AJAX token -->
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>DueDate</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Description</td>
+                <td>@item.DueDate?.ToShortDateString()</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary toggle-status" data-id="@item.Id">
+                        @item.Status
+                    </button>
+                </td>
+                <td>@item.Priority</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-primary btn-sm">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.toggle-status').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                const id = button.getAttribute('data-id');
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                const response = await fetch('/TaskItems/ToggleStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(parseInt(id))
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    button.textContent = result.status;
+                }
+            });
+        });
+    </script>
+}

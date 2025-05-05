@@ -1,0 +1,37 @@
+﻿@model List<TaskManager.Controllers.StatusSummary>
+
+@{
+    ViewData["Title"] = "Dashboard";
+    var total = Model.Sum(s => s.Count);
+}
+
+<h2>Task Summary</h2>
+
+<ul class="list-group mb-4">
+    @foreach (var status in Model)
+    {
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            @status.Status
+            <span class="badge bg-primary rounded-pill">@status.Count</span>
+        </li>
+    }
+</ul>
+
+@if (total > 0)
+{
+    <h4>Progress</h4>
+    <div class="progress">
+        @foreach (var status in Model)
+        {
+            var percentage = (int)((status.Count / (double)total) * 100);
+            var color = status.Status == "Completed" ? "bg-success" : "bg-warning";
+            <div class="progress-bar @color" style="width:@percentage%">
+                @status.Status (@percentage%)
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No tasks to show.</p>
+}
